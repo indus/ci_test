@@ -26,10 +26,10 @@ jobs:
             if (!commit_data) throw "no commit";
 
 
-            const commit_cnames = commit_data.files.filter(file => file.filename == cname_list)[0];
+            const commit_cnames = commit_data.files.find(file => file.filename == cname_list);
 
             console.log(commit_cnames);
-
+            
             const commit_line = commit_cnames.patch.match(/\n([\+|\-])\s*,?\"?(\w*)\"?:\s*\"(.*)\",?\s?(\/\/.*)?\n/);
 
             console.log(commit_line);
