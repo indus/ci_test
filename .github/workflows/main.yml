@@ -35,7 +35,7 @@ jobs:
 
             if(!commit_cnames) return console.log(`commit doesn't affect '${cname_list}'`);
 
-            if(commit_data.files > 1) {
+            if(commit_data.files.length > 1) {
               github.issues.createComment(Object.assign({}, PR,
                 { body: `Only change '${cname_list}' when you add or remove a subdomain` })
               );
