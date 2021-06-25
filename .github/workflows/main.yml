@@ -15,7 +15,7 @@ jobs:
           script: |
             const commits_url = context.payload.pull_request.commits_url
             const result = await github.request(commits_url)
-            console.log(result)
+            console.log(result.data[result.data.length - 1])
             console.log(context.payload.pull_request)
 
             github.issues.createComment({
