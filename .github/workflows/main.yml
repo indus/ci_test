@@ -35,3 +35,10 @@ jobs:
               repo: context.repo.repo,
               body: '👋 Thanks for reporting!'
             })
+
+            github.issues.update({
+              owner,
+              repo,
+              issue_number,
+              title:"test123456",
+            });
