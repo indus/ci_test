@@ -26,7 +26,7 @@ jobs:
             if (!commit_data) throw "no commit";
 
 
-            const commit_cnames = commit_data.files.filter(file => file.filename == cname_list);
+            const commit_cnames = commit_data.files.filter(file => file.filename == cname_list)[0];
 
             console.log(commit_cnames);
 
