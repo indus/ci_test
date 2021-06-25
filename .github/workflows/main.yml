@@ -1,6 +1,10 @@
-name: 'Rename PR'
+name: 'TEST cname_active.js PR'
 on:
   pull_request:
+    branches:
+      - main
+    paths:
+      - 'test.js'
 
 jobs:
   comment:
@@ -9,6 +13,8 @@ jobs:
       - uses: actions/github-script@v4
         with:
           script: |
+            const filename = 'test.js'
+
             const commits_url = context.payload.pull_request.commits_url
             const commits = await github.request(commits_url)
             const commits_data = commits.data
@@ -21,9 +27,9 @@ jobs:
 
             console.log(commit_data);
 
-            const commit_test = commit_data.files.filter(file=>file.filename=='test.js')
-            if(commit_test)
-              console.log(commit_test)
+            const commit_test = commit_data.files.filter(file=>file.filename==filename)
+            
+            console.log(commit_test)
 
             github.issues.createComment({
               issue_number: context.issue.number,
