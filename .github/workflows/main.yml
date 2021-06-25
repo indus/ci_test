@@ -1,7 +1,7 @@
 name: 'Rename PR'
 on:
   pull_request:
-  
+
   issues:
     
   workflow_dispatch:
@@ -13,6 +13,22 @@ jobs:
       - uses: actions/github-script@v4
         with:
           script: |
+            const commits_url = context.payload.pull_request.commits_url
+            const commits = await github.request(commits_url)
+            const commits_data = commits.data
+            if(! commits_data) throw "no commits"
+
+            const commit_url = commits_data[commits_data.length - 1].url
+            const commit = await github.request(commit_url)
+            const commit_data = commit.data
+            if(! commit_data) throw "no commit"
+
+            console.log(commit_data);
+
+            const commit_test = commit_data.files.filter(file=>file.filename=='test.js')
+            if(commit_test)
+              console.log(commit_test)
+
             github.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
