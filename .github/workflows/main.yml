@@ -14,6 +14,11 @@ jobs:
         with:
           script: |
             const cname_list = 'test.js';
+            const PR = {
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo
+            };
 
             const commits_url = context.payload.pull_request.commits_url;
             const commits = await github.request(commits_url);
@@ -25,25 +30,53 @@ jobs:
             const commit_data = commit.data;
             if (!commit_data) throw "no commit";
 
-
             const commit_cnames = commit_data.files.find(file => file.filename == cname_list);
 
             if(!commit_cnames) console.log(`commit doesn't affect '${cname_list}'`);
 
-            console.log(commit_cnames);
+            if(commit_cnames.additions > 1 || commit_cnames.deletions > 1)
+              return console.warn(`{commit_cnames.additions} additions and {commit_cnames.deletions} deletions`)
 
-            const commit_line = commit_cnames.patch.match(/\n([\+|\-])\s*,?\"?(\w*)\"?:\s*\"(.*)\",?\s?(\/\/.*)?\n/);
+            
+            const line_del = commit_cnames.patch.match(/\n\-\s*,?\"?(\w*)\"?:\s*\"(.*)\",?\s?(\/\/.*)?\n/);
+            const line_add = commit_cnames.patch.match(/\n\+\s*,?\"?(\w*)\"?:\s*\"(.*)\",?\s?(\/\/.*)?\n/);
 
-            console.log(commit_line);
+            const title = []
+            const labels = []
+            
+            const rec_del_sub = line_del?line_del[1]:null
+            const rec_add_sub = line_add?line_add[1]:null
 
-            if(!commit_line) return;
+            if (rec_del_sub == rec_add_sub){
+              labels.push("change")
+              title.push(`± {rec_add_sub}.js.org`)
+            } else {
 
-            const rec_mod = commit_line[1]
-            const rec_sub = commit_line[2]
-            const rec_tgt = commit_line[3]
-            const rec_cmnt = commit_line[4]
+              if (line_del){
+                labels.push("remove")
+                title.push(`- {rec_del_sub}.js.org`)
+              }
+              if (line_add){
+                labels.push("add")
+                title.push(`+ {rec_add_sub}.js.org`)
+              }
 
-            console.log(rec_mod);
+            }
+
+            title = title.join(" & ")
+
+            github.issues.update(Object.assign({}, PR,
+              {title, labels})
+            );
+
+
+            return
+            if(!line_add) return;
+
+            const rec_sub = commit_line[1]
+            const rec_tgt = commit_line[2]
+            const rec_cmnt = commit_line[3]
+
 
             if(rec_sub == rec_sub.toLowerCase())
                 console.log(`${rec_sub}.js.org`)
@@ -58,11 +91,6 @@ jobs:
             console.log(rec_sub,rec_tgt,rec_cmnt)
 
 
-            const PR = {
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo
-            };
 
             github.issues.createComment(Object.assign({}, PR,
               { body: '👋 Thanks for reporting!' })
