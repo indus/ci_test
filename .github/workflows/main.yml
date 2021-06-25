@@ -1,7 +1,8 @@
 name: 'Rename PR'
 on:
   pull_request:
-    types: [unlabeled]
+  
+  issues:
     
   workflow_dispatch:
 
