@@ -1,7 +1,7 @@
 var test = {
   key:"val",
   test:"test1",
-  HelloAction1:"hallo24", //qjwbj
+  helloaction1:"hallo24", // noCF
   test:"test2",
   test2:"test2"
 }
