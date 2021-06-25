@@ -1,7 +1,7 @@
 name: 'Rename PR'
 on:
   pull_request:
-  
+
   issues:
     
   workflow_dispatch:
@@ -13,6 +13,8 @@ jobs:
       - uses: actions/github-script@v4
         with:
           script: |
+            console.log(context)
+
             github.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
