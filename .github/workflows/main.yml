@@ -28,8 +28,10 @@ jobs:
 
             const commit_cnames = commit_data.files.find(file => file.filename == cname_list);
 
+            if(!commit_cnames) console.log(`commit doesn't affect '${cname_list}'`);
+
             console.log(commit_cnames);
-            
+
             const commit_line = commit_cnames.patch.match(/\n([\+|\-])\s*,?\"?(\w*)\"?:\s*\"(.*)\",?\s?(\/\/.*)?\n/);
 
             console.log(commit_line);
