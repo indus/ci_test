@@ -37,15 +37,14 @@ jobs:
             if(commit_cnames.additions > 1 || commit_cnames.deletions > 1)
               return console.warn(`{commit_cnames.additions} additions and {commit_cnames.deletions} deletions`)
 
-            
             const line_del = commit_cnames.patch.match(/\n\-\s*,?\"?(\w*)\"?:\s*\"(.*)\",?\s?(\/\/.*)?\n/);
             const line_add = commit_cnames.patch.match(/\n\+\s*,?\"?(\w*)\"?:\s*\"(.*)\",?\s?(\/\/.*)?\n/);
 
             let title = []
             let labels = []
             
-            const rec_del_sub = line_del?line_del[1]:null
-            const rec_add_sub = line_add?line_add[1]:null
+            const rec_del_sub = line_del?line_del[1].toLowerCase():null
+            const rec_add_sub = line_add?line_add[1].toLowerCase():null
 
             if (rec_del_sub == rec_add_sub){
               labels.push("change")
@@ -69,40 +68,30 @@ jobs:
               {title, labels})
             );
 
-
-            return
             if(!line_add) return;
 
-            const rec_sub = commit_line[1]
-            const rec_tgt = commit_line[2]
-            const rec_cmnt = commit_line[3]
+            const rec_sub = line_add[1]
+            const rec_tgt = line_add[2]
+            const rec_cmnt = line_add[3]
 
+            let format_errors = []
 
-            if(rec_sub == rec_sub.toLowerCase())
-                console.log(`${rec_sub}.js.org`)
-            else
-                console.info(`make the key lowercase`)
+            if(rec_sub != rec_sub.toLowerCase())
+                format_errors.push(`- the subdomain is not lowercase`)
+            if(rec_tgt.match(/^(?:https?:\/)?\//))
+                format_errors.push(`- the target starts with 'http(s)://'`)
+            if(rec_tgt.match(/\/$/))
+                format_errors.push(`- the target has a trailing slash`)
+            if(rec_cmnt && rec_cmnt != "// noCF")
+                format_errors.push(`- there is an unknown comment`)
 
-                console.log(rec_tgt.match(/^(?:https?:\/)?\//))
-                console.log(rec_tgt.match(/\/$/))
+            if (format_errors.length)
+              github.issues.createComment(Object.assign({}, PR,
+                { body: `The format of the added record is incorrect:\n ${
+                  format_errors.join('\n')
+                }` })
+              );
 
-            console.log()
-
-            console.log(rec_sub,rec_tgt,rec_cmnt)
-
-
-
-            github.issues.createComment(Object.assign({}, PR,
-              { body: '👋 Thanks for reporting!' })
-            );
-
-            github.issues.update(Object.assign({}, PR,
-              {title: "test123456"})
-            );
-
-            github.issues.addLabels(Object.assign({}, PR,
-              {labels: ['bug']})
-            );
 
             console.log("---");
 
