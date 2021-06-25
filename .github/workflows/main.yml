@@ -32,41 +32,50 @@ jobs:
 
             const commit_cnames = commit_data.files.find(file => file.filename == cname_list);
 
-            if(!commit_cnames) console.log(`commit doesn't affect '${cname_list}'`);
+            if(!commit_cnames) return console.log(`commit doesn't affect '${cname_list}'`);
+
+            if(commit_data.files > 1) {
+              github.issues.createComment(Object.assign({}, PR,
+                { body: `Only change '${cname_list}' when you add or remove a subdomain` })
+              );
+              throw "multiple files changed"
+            }
 
             if(commit_cnames.additions > 1 || commit_cnames.deletions > 1)
-              return console.warn(`{commit_cnames.additions} additions and {commit_cnames.deletions} deletions`)
+              throw `{commit_cnames.additions} additions and {commit_cnames.deletions} deletions`
 
             const line_del = commit_cnames.patch.match(/\n\-\s*,?\"?(\w*)\"?:\s*\"(.*)\",?\s?(\/\/.*)?\n/);
             const line_add = commit_cnames.patch.match(/\n\+\s*,?\"?(\w*)\"?:\s*\"(.*)\",?\s?(\/\/.*)?\n/);
 
             let title = []
-            let labels = []
-            
+            let labelsRemove, labelsAdd
+
             const rec_del_sub = line_del?line_del[1].toLowerCase():null
             const rec_add_sub = line_add?line_add[1].toLowerCase():null
 
             if (rec_del_sub == rec_add_sub){
-              labels.push("change")
+              labelsRemove = ['remove', 'add']
+              labelsAdd = ['change']
               title.push(`± ${rec_add_sub}.js.org`)
             } else {
-
+              labelsRemove = ['change']
               if (line_del){
-                labels.push("remove")
+                labelsAdd = ['remove']
                 title.push(`- ${rec_del_sub}.js.org`)
               }
               if (line_add){
-                labels.push("add")
+                labelsAdd = ['add']
                 title.push(`+ ${rec_add_sub}.js.org`)
               }
-
             }
 
-            title = title.join(" & ")
+            if(labelsRemove)
+            github.issues.removeLabels(Object.assign({}, PR, {labels: labelsRemove}));
+            
+            if(labelsAdd)
+            github.issues.addLabels(Object.assign({}, PR, {labels: labelsAdd}));
 
-            github.issues.update(Object.assign({}, PR,
-              {title, labels})
-            );
+            github.issues.update(Object.assign({}, PR, {title:title.join(" & ")}));
 
             if(!line_add) return;
 
