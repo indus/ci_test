@@ -14,9 +14,12 @@ jobs:
         with:
           script: |
             const commits_url = context.payload.pull_request.commits_url
-            const result = await github.request(commits_url)
-            console.log(result.data[result.data.length - 1])
-            console.log(context.payload.pull_request)
+            let commits = await github.request(commits_url)
+            const commit_url = commits.data[commits.data.length - 1].url
+            commit = await github.request(commit_url)
+            console.log(commit)
+            console.log(commit.files)
+            console.log(context.payload.pull_request
 
             github.issues.createComment({
               issue_number: context.issue.number,
