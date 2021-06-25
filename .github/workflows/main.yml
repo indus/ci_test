@@ -13,37 +13,112 @@ jobs:
       - uses: actions/github-script@v4
         with:
           script: |
-            const filename = 'test.js'
-            
+            const cname_list = 'test.js';
+
+            const commits_url = context.payload.pull_request.commits_url;
+            const commits = await github.request(commits_url);
+            const commits_data = commits.data;
+            if (!commits_data) throw "no commits";
+
+            const commit_url = commits_data[commits_data.length - 1].url;
+            const commit = await github.request(commit_url);
+            const commit_data = commit.data;
+            if (!commit_data) throw "no commit";
+
+
+            const commit_cnames = commit_data.files.filter(file => file.filename == cname_list);
+
+            console.log(commit_cnames);
+
+            const commit_line = commit_cnames.patch.match(/\n([\+|\-])\s*,?\"?(\w*)\"?:\s*\"(.*)\",?\s?(\/\/.*)?\n/);
+
+            console.log(commit_line);
+
+            if(!commit_line) return;
+
+            const rec_mod = commit_line[1]
+            const rec_sub = commit_line[2]
+            const rec_tgt = commit_line[3]
+            const rec_cmnt = commit_line[4]
+
+            console.log(rec_mod);
+
+            if(rec_sub == rec_sub.toLowerCase())
+                console.log(`${rec_sub}.js.org`)
+            else
+                console.info(`make the key lowercase`)
+
+                console.log(rec_tgt.match(/^(?:https?:\/)?\//))
+                console.log(rec_tgt.match(/\/$/))
+
+            console.log()
+
+            console.log(rec_sub,rec_tgt,rec_cmnt)
+
+
+            const PR = {
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo
+            };
+
+            github.issues.createComment(Object.assign({}, PR,
+              { body: '👋 Thanks for reporting!' })
+            );
+
+            github.issues.update(Object.assign({}, PR,
+              {title: "test123456"})
+            );
+
+            github.issues.addLabels(Object.assign({}, PR,
+              {labels: ['bug']})
+            );
+
+            console.log("---");
+
             console.log(context);
 
 
-            const commits_url = context.payload.pull_request.commits_url
-            const commits = await github.request(commits_url)
-            const commits_data = commits.data
-            if(! commits_data) throw "no commits"
-
-            const commit_url = commits_data[commits_data.length - 1].url
-            const commit = await github.request(commit_url)
-            const commit_data = commit.data
-            if(! commit_data) throw "no commit"
-
-            console.log(commit_data);
-
-            const commit_test = commit_data.files.filter(file=>file.filename==filename)
             
-            console.log(commit_test)
+            
+            
+            
 
-            github.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: '👋 Thanks for reporting!'
-            })
+            
+            
+            
+            
 
-            github.issues.update({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              title:"test123456",
-            });
+
+            
+          
+            
+
+            
+
+            
+
+
+            
+            
+            
+            
+            
+
+            
+            
+            
+
+            
+            
+            
+            
+
+            
+            
+            
+            
+
+            
+          
+            
