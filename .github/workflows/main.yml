@@ -14,6 +14,9 @@ jobs:
         with:
           script: |
             const filename = 'test.js'
+            
+            console.log(context);
+
 
             const commits_url = context.payload.pull_request.commits_url
             const commits = await github.request(commits_url)
