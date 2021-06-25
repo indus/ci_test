@@ -49,16 +49,16 @@ jobs:
 
             if (rec_del_sub == rec_add_sub){
               labels.push("change")
-              title.push(`± {rec_add_sub}.js.org`)
+              title.push(`± ${rec_add_sub}.js.org`)
             } else {
 
               if (line_del){
                 labels.push("remove")
-                title.push(`- {rec_del_sub}.js.org`)
+                title.push(`- ${rec_del_sub}.js.org`)
               }
               if (line_add){
                 labels.push("add")
-                title.push(`+ {rec_add_sub}.js.org`)
+                title.push(`+ ${rec_add_sub}.js.org`)
               }
 
             }
