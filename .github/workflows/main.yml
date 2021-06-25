@@ -17,8 +17,8 @@ jobs:
             let commits = await github.request(commits_url)
             const commit_url = commits.data[commits.data.length - 1].url
             commit = await github.request(commit_url)
-            console.log(commit)
-            console.log(commit.files)
+            console.log(commit.data)
+            console.log(commit.data.files)
 
             github.issues.createComment({
               issue_number: context.issue.number,
