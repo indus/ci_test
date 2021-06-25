@@ -2,10 +2,6 @@ name: 'Rename PR'
 on:
   pull_request:
 
-  issues:
-    
-  workflow_dispatch:
-
 jobs:
   comment:
     runs-on: ubuntu-latest
