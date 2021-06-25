@@ -5,6 +5,7 @@ on:
       - main
     paths:
       - 'test.js'
+    types: [opened]
 
 jobs:
   validateCNAME:
@@ -48,34 +49,31 @@ jobs:
             const line_add = commit_cnames.patch.match(/\n\+\s*,?\"?(\w*)\"?:\s*\"(.*)\",?\s?(\/\/.*)?\n/);
 
             let title = []
-            let labelsRemove, labelsAdd
-
+            let labels = []
+            
             const rec_del_sub = line_del?line_del[1].toLowerCase():null
             const rec_add_sub = line_add?line_add[1].toLowerCase():null
 
             if (rec_del_sub == rec_add_sub){
-              labelsRemove = ['remove', 'add']
-              labelsAdd = ['change']
+              labels.push("change")
               title.push(`± ${rec_add_sub}.js.org`)
             } else {
-              labelsRemove = ['change']
+
               if (line_del){
-                labelsAdd = ['remove']
+                labels.push("remove")
                 title.push(`- ${rec_del_sub}.js.org`)
               }
               if (line_add){
-                labelsAdd = ['add']
+                labels.push("add")
                 title.push(`+ ${rec_add_sub}.js.org`)
               }
             }
 
-            if(labelsRemove)
-            github.issues.removeLabels(Object.assign({}, PR, {labels: labelsRemove}));
-            
-            if(labelsAdd)
-            github.issues.addLabels(Object.assign({}, PR, {labels: labelsAdd}));
+            title = title.join(" & ")
 
-            github.issues.update(Object.assign({}, PR, {title:title.join(" & ")}));
+            github.issues.update(Object.assign({}, PR,
+              {title, labels})
+            );
 
             if(!line_add) return;
 
