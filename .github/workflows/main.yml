@@ -1,4 +1,4 @@
-name: 'TEST cname_active.js PR'
+name: 'validateCNAME'
 on:
   pull_request:
     branches:
@@ -7,7 +7,7 @@ on:
       - 'test.js'
 
 jobs:
-  comment:
+  validateCNAME:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/github-script@v4
@@ -41,8 +41,8 @@ jobs:
             const line_del = commit_cnames.patch.match(/\n\-\s*,?\"?(\w*)\"?:\s*\"(.*)\",?\s?(\/\/.*)?\n/);
             const line_add = commit_cnames.patch.match(/\n\+\s*,?\"?(\w*)\"?:\s*\"(.*)\",?\s?(\/\/.*)?\n/);
 
-            const title = []
-            const labels = []
+            let title = []
+            let labels = []
             
             const rec_del_sub = line_del?line_del[1]:null
             const rec_add_sub = line_add?line_add[1]:null
