@@ -19,7 +19,6 @@ jobs:
             commit = await github.request(commit_url)
             console.log(commit)
             console.log(commit.files)
-            console.log(context.payload.pull_request
 
             github.issues.createComment({
               issue_number: context.issue.number,
