@@ -1,3 +1,4 @@
 var test = {
-  key:"val"
+  key:"val",
+  test:"test1"
 }
