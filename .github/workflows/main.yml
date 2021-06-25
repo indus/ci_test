@@ -14,14 +14,18 @@ jobs:
         with:
           script: |
             const commits_url = context.payload.pull_request.commits_url
-            const commits = await github.request(commits_url).data
-            if(! commits) throw "no commits"
+            const commits = await github.request(commits_url)
+            const commits_data = commits.data
+            if(! commits_data) throw "no commits"
 
-            const commit_url = commits[commits.length - 1].url
-            const commit = await github.request(commit_url).data
-            if(! commit) throw "no commit"
+            const commit_url = commits_data[commits_data.length - 1].url
+            const commit = await github.request(commit_url)
+            const commit_data = commit.data
+            if(! commit_data) throw "no commit"
 
-            const commit_test = commit.files.filter(file=>file.filename=='test.js')
+            console.log(commit_data);
+
+            const commit_test = commit_data.files.filter(file=>file.filename=='test.js')
             if(commit_test)
               console.log(commit_test)
 
