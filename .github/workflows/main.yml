@@ -13,9 +13,9 @@ jobs:
       - uses: actions/github-script@v4
         with:
           script: |
-            const diff_url = context.payload.pull_request.diff_url
-            const result = await github.request(diff_url)
-            console.log(result)
+            //const diff_url = context.payload.pull_request.diff_url
+            //const result = await github.request(diff_url)
+            console.log(context)
 
             github.issues.createComment({
               issue_number: context.issue.number,
