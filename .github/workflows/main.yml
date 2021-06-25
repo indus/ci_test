@@ -1,37 +1,152 @@
-name: 'Rename PR'
+name: 'validateCNAME'
 on:
   pull_request:
-
-  issues:
-    
-  workflow_dispatch:
+    branches:
+      - main
+    paths:
+      - 'test.js'
 
 jobs:
-  comment:
+  validateCNAME:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/github-script@v4
         with:
           script: |
-            const commits_url = context.payload.pull_request.commits_url
-            const commits = await github.request(commits_url)
-            const commits_data = commits.data
-            if(! commits_data) throw "no commits"
-
-            const commit_url = commits_data[commits_data.length - 1].url
-            const commit = await github.request(commit_url)
-            const commit_data = commit.data
-            if(! commit_data) throw "no commit"
-
-            console.log(commit_data);
-
-            const commit_test = commit_data.files.filter(file=>file.filename=='test.js')
-            if(commit_test)
-              console.log(commit_test)
-
-            github.issues.createComment({
+            const cname_list = 'test.js';
+            const PR = {
               issue_number: context.issue.number,
               owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: '👋 Thanks for reporting!'
-            })
+              repo: context.repo.repo
+            };
+
+            const commits_url = context.payload.pull_request.commits_url;
+            const commits = await github.request(commits_url);
+            const commits_data = commits.data;
+            if (!commits_data) throw "no commits";
+
+            const commit_url = commits_data[commits_data.length - 1].url;
+            const commit = await github.request(commit_url);
+            const commit_data = commit.data;
+            if (!commit_data) throw "no commit";
+
+            const commit_cnames = commit_data.files.find(file => file.filename == cname_list);
+
+            if(!commit_cnames) return console.log(`commit doesn't affect '${cname_list}'`);
+
+            if(commit_data.files > 1) {
+              github.issues.createComment(Object.assign({}, PR,
+                { body: `Only change '${cname_list}' when you add or remove a subdomain` })
+              );
+              throw "multiple files changed"
+            }
+
+            if(commit_cnames.additions > 1 || commit_cnames.deletions > 1)
+              throw `{commit_cnames.additions} additions and {commit_cnames.deletions} deletions`
+
+            const line_del = commit_cnames.patch.match(/\n\-\s*,?\"?(\w*)\"?:\s*\"(.*)\",?\s?(\/\/.*)?\n/);
+            const line_add = commit_cnames.patch.match(/\n\+\s*,?\"?(\w*)\"?:\s*\"(.*)\",?\s?(\/\/.*)?\n/);
+
+            let title = []
+            let labelsRemove, labelsAdd
+
+            const rec_del_sub = line_del?line_del[1].toLowerCase():null
+            const rec_add_sub = line_add?line_add[1].toLowerCase():null
+
+            if (rec_del_sub == rec_add_sub){
+              labelsRemove = ['remove', 'add']
+              labelsAdd = ['change']
+              title.push(`± ${rec_add_sub}.js.org`)
+            } else {
+              labelsRemove = ['change']
+              if (line_del){
+                labelsAdd = ['remove']
+                title.push(`- ${rec_del_sub}.js.org`)
+              }
+              if (line_add){
+                labelsAdd = ['add']
+                title.push(`+ ${rec_add_sub}.js.org`)
+              }
+            }
+
+            if(labelsRemove)
+            github.issues.removeLabels(Object.assign({}, PR, {labels: labelsRemove}));
+            
+            if(labelsAdd)
+            github.issues.addLabels(Object.assign({}, PR, {labels: labelsAdd}));
+
+            github.issues.update(Object.assign({}, PR, {title:title.join(" & ")}));
+
+            if(!line_add) return;
+
+            const rec_sub = line_add[1]
+            const rec_tgt = line_add[2]
+            const rec_cmnt = line_add[3]
+
+            let format_errors = []
+
+            if(rec_sub != rec_sub.toLowerCase())
+                format_errors.push(`- the subdomain is not lowercase`)
+            if(rec_tgt.match(/^(?:https?:\/)?\//))
+                format_errors.push(`- the target starts with 'http(s)://'`)
+            if(rec_tgt.match(/\/$/))
+                format_errors.push(`- the target has a trailing slash`)
+            if(rec_cmnt && rec_cmnt != "// noCF")
+                format_errors.push(`- there is an unknown comment`)
+
+            if (format_errors.length)
+              github.issues.createComment(Object.assign({}, PR,
+                { body: `The format of the added record is incorrect:\n ${
+                  format_errors.join('\n')
+                }` })
+              );
+
+
+            console.log("---");
+
+            console.log(context);
+
+
+            
+            
+            
+            
+
+            
+            
+            
+            
+
+
+            
+          
+            
+
+            
+
+            
+
+
+            
+            
+            
+            
+            
+
+            
+            
+            
+
+            
+            
+            
+            
+
+            
+            
+            
+            
+
+            
+          
+            
